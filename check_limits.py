@@ -3,14 +3,14 @@ NORMAL = 'NORMAL'
 LOW_BREACH = 'LOW'
 HIGH_BREACH = 'HIGH'
 
-# Limits for each parameter
+# Thresholds for each vital
 VITAL_LIMITS = {
     'temperature': {'min': 0, 'max': 45},
     'soc': {'min': 20, 'max': 80},
     'charge_rate': {'min': 0, 'max': 0.8}
 }
 
-# Check if value is within limits
+# Function to infer breach type
 def infer_breach(value, min_limit, max_limit):
     if value < min_limit:
         return LOW_BREACH
@@ -18,7 +18,7 @@ def infer_breach(value, min_limit, max_limit):
         return HIGH_BREACH
     return NORMAL
 
-# Function to check each vital
+# Function to check a single vital
 def check_vital(vital_name, value):
     limits = VITAL_LIMITS[vital_name]
     breach = infer_breach(value, limits['min'], limits['max'])
@@ -28,22 +28,25 @@ def check_vital(vital_name, value):
         'breach': breach
     }
 
-# Main function with reporter hook
+# Function to handle all reporting
+def report_abnormal_vitals(vitals, reporter):
+    for vital in vitals:
+        reporter(f"{vital['vital'].capitalize()} is {vital['breach']}! Value: {vital['value']}")
+
+# Main function
 def battery_is_ok(temperature, soc, charge_rate, reporter=print):
     results = [
         check_vital('temperature', temperature),
         check_vital('soc', soc),
         check_vital('charge_rate', charge_rate)
     ]
-
     abnormal_vitals = [res for res in results if res['breach'] != NORMAL]
-
-    for vital in abnormal_vitals:
-        reporter(f"{vital['vital'].capitalize()} is {vital['breach']}! Value: {vital['value']}")
-
+    
+    report_abnormal_vitals(abnormal_vitals, reporter)
     return len(abnormal_vitals) == 0
 
-# Example: Default test with built-in reporter (print)
+
+# Basic inline test
 if __name__ == '__main__':
     assert battery_is_ok(25, 70, 0.7) is True
     assert battery_is_ok(50, 85, 0) is False
