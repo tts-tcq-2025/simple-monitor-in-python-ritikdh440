@@ -28,13 +28,13 @@ def check_vital(vital_name, value):
         'breach': breach
     }
 
-# Function to handle all reporting
-def report_abnormal_vitals(vitals, reporter):
+# Function to report abnormal vitals
+def report_abnormal_vitals(vitals):
     for vital in vitals:
-        reporter(f"{vital['vital'].capitalize()} is {vital['breach']}! Value: {vital['value']}")
+        print(f"{vital['vital'].capitalize()} is {vital['breach']}! Value: {vital['value']}")
 
-# Main function
-def battery_is_ok(temperature, soc, charge_rate, reporter=print):
+# Main function with fixed signature
+def battery_is_ok(temperature, soc, charge_rate):
     results = [
         check_vital('temperature', temperature),
         check_vital('soc', soc),
@@ -42,11 +42,10 @@ def battery_is_ok(temperature, soc, charge_rate, reporter=print):
     ]
     abnormal_vitals = [res for res in results if res['breach'] != NORMAL]
     
-    report_abnormal_vitals(abnormal_vitals, reporter)
+    report_abnormal_vitals(abnormal_vitals)
     return len(abnormal_vitals) == 0
 
-
-# Basic inline test
+# Basic inline tests
 if __name__ == '__main__':
     assert battery_is_ok(25, 70, 0.7) is True
     assert battery_is_ok(50, 85, 0) is False
